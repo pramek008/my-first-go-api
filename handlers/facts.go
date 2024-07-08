@@ -77,3 +77,27 @@ func UpdateFact(c *fiber.Ctx) error {
   // Return the updated fact
   return c.Status(fiber.StatusOK).JSON(fact)
 }
+
+func DeleteFact(c *fiber.Ctx) error {
+    var fact models.Fact
+    id := c.Params("id")
+
+    // Find the existing fact by ID
+    result := database.DB.Db.Where("id = ?", id).First(&fact)
+    if result.Error != nil {
+        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+            "message": "Fact not found",
+        })
+    }
+
+    // Delete the fact
+    if err := database.DB.Db.Delete(&fact).Error; err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "message": "Error deleting fact",
+        })
+    }
+
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": "Fact deleted successfully",
+    })
+}
